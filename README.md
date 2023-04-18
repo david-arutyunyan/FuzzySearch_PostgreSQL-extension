@@ -1,1 +1,1 @@
-# FuzzySearch_PostgreSQL-extension
+# Fuzzy Search Mechanism (PostgreSQL extension)
