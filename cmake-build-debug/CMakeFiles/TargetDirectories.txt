@@ -1,3 +1,0 @@
-/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/cmake-build-debug/CMakeFiles/PostgresFuzzySearchExtension.dir
-/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/cmake-build-debug/CMakeFiles/rebuild_cache.dir
