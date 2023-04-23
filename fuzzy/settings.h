@@ -8,4 +8,10 @@ extern float tds_threshold;
 void set_tds_threshold(float value);
 float get_tds_threshold(void);
 
+
+extern float boost_factor;
+
+void set_boost_factor(float value);
+float get_boost_factor(void);
+
 #endif /* SETTINGS_H */
