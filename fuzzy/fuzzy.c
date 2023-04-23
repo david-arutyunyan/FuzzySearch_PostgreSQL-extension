@@ -8,6 +8,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "settings.h"
+#include <ctype.h>
+
+float tds_threshold = 0.7f;
+
+void set_tds_threshold(float value)
+{
+    tds_threshold = value;
+}
+
+float get_tds_threshold(void)
+{
+    return tds_threshold;
+}
 
 #define MAX_STRING_LENGTH 100
 
@@ -98,9 +112,45 @@ int levenshtein_distance(const char *s1, const char *s2)
     return result;
 }
 
+char* get_initials(char* s) {
+    char* initials = malloc(100 * sizeof(char));
+    int len = strlen(s);
+    int index = 0;
+    for (int i = 0; i < len; i++) {
+        if (isalpha(s[i])) {
+            initials[index++] = s[i];
+            while (isalpha(s[i+1])) {
+                i++;
+            }
+        }
+    }
+    initials[index] = '\0';
+    return initials;
+}
+
 
 
 PG_MODULE_MAGIC;
+
+
+PG_FUNCTION_INFO_V1(get_threshold);
+
+Datum
+get_threshold(PG_FUNCTION_ARGS) {
+    PG_RETURN_FLOAT8(floor( get_tds_threshold()*100 )/100);
+
+}
+
+
+PG_FUNCTION_INFO_V1(set_threshold);
+
+Datum
+set_threshold(PG_FUNCTION_ARGS) {
+    float threshold = PG_GETARG_FLOAT8(0);
+
+    set_tds_threshold(threshold);
+}
+
 
 PG_FUNCTION_INFO_V1(fuzzy_search);
 
@@ -114,12 +164,20 @@ fuzzy_search(PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
     }
 
+
     text* text_a = PG_GETARG_TEXT_P(0);
     text* text_b = PG_GETARG_TEXT_P(1);
-    float threshold = PG_GETARG_FLOAT8(2);
+    float threshold = tds_threshold; //PG_GETARG_FLOAT8(2);
 
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
+
+    char* str1_init = get_initials(str1);
+    char* str2_init = get_initials(str2);
+
+    elog(INFO, "TRSLD: %f", threshold);
+    elog(INFO, "My a string initials: %s", str1_init);
+    elog(INFO, "My b string initials: %s", str2_init);
 
     int len1 = strlen(str1);
     int len2 = strlen(str2);
@@ -148,6 +206,12 @@ PG_FUNCTION_INFO_V1(lev_dist);
 Datum
 lev_dist(PG_FUNCTION_ARGS)
 {
+    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "w");
+
+    if (log_file == NULL) {
+        elog(ERROR, "Failed to open log file.");
+        PG_RETURN_NULL();
+    }
 
     text* text_a = PG_GETARG_TEXT_P(0);
     text* text_b = PG_GETARG_TEXT_P(1);
