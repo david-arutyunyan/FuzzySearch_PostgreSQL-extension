@@ -14,4 +14,9 @@ extern float boost_factor;
 void set_boost_factor(float value);
 float get_boost_factor(void);
 
+extern int max_errors;
+
+void set_errors(int value);
+int get_errors(void);
+
 #endif /* SETTINGS_H */

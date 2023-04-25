@@ -18,6 +18,7 @@
 //
 float tds_threshold = 0.7f;
 float boost_factor = 0.1f;
+int max_errors = 3;
 
 void set_tds_threshold(float value)
 {
@@ -37,6 +38,16 @@ void set_boost_factor(float value)
 float get_boost_factor(void)
 {
     return floor(boost_factor*100)/100;
+}
+
+void set_errors(int value)
+{
+    max_errors = value;
+}
+
+int get_errors(void)
+{
+    return max_errors;
 }
 
 
@@ -311,6 +322,90 @@ double jaro_winkler_distance_algo(const char *s1, const char *s2, double jw_boos
 
 
 
+
+//
+//                                                       Bitap
+//
+
+typedef unsigned long long int bit_vector;
+
+bool bitap_algo(char* pattern, char* text, int errors) {
+    int m = strlen(pattern);
+    bit_vector mask[128] = {0}; // initialize mask to 0
+    bit_vector R = ~(1 << (m - 1));
+    int i, j;
+
+    // Preprocessing
+    for (i = 0; i < m; i++) {
+        mask[pattern[i]] |= 1 << i;
+    }
+
+    // Searching
+    for (i = 0; text[i] != '\0'; i++) {
+        bit_vector old_R = R;
+        R |= mask[text[i]];
+        R <<= 1;
+        if ((R & (1 << m)) == 0) {
+            return true;
+        } else if ((old_R & (1 << m)) && errors > 0) {
+            if (bitap_algo(pattern, text + i + 1, errors - 1)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
+//
+//                                                  Wagner-Fisher
+//
+
+int wagner_fischer_algo(char* s1, char* s2) {
+    int m = strlen(s1);
+    int n = strlen(s2);
+
+    int* prev_row = (int*) calloc(n + 1, sizeof(int));
+    int* curr_row = (int*) calloc(n + 1, sizeof(int));
+
+    for (int j = 0; j <= n; j++) {
+        prev_row[j] = j;
+    }
+
+    for (int i = 1; i <= m; i++) {
+        curr_row[0] = i;
+
+        for (int j = 1; j <= n; j++) {
+            int cost = s1[i-1] == s2[j-1] ? 0 : 1;
+            curr_row[j] = min(
+                    curr_row[j-1] + 1,
+                    prev_row[j] + 1,
+                    prev_row[j-1] + cost
+            );
+        }
+
+        int* tmp = prev_row;
+        prev_row = curr_row;
+        curr_row = tmp;
+    }
+
+    int result = prev_row[n];
+    free(prev_row);
+    free(curr_row);
+
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
 PG_MODULE_MAGIC;
 
 
@@ -351,12 +446,30 @@ set_bfactor(PG_FUNCTION_ARGS) {
 }
 
 
+PG_FUNCTION_INFO_V1(get_max_errors);
+
+Datum
+get_max_errors(PG_FUNCTION_ARGS) {
+    PG_RETURN_INT32(get_errors());
+}
+
+
+PG_FUNCTION_INFO_V1(set_max_errors);
+
+Datum
+set_max_errors(PG_FUNCTION_ARGS) {
+    int errors = PG_GETARG_INT32(0);
+
+    set_errors(errors);
+}
+
+
 PG_FUNCTION_INFO_V1(fuzzy_search);
 
 Datum
 fuzzy_search(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "w");
+    FILE *log_file = fopen("logfile.txt", "w");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -405,7 +518,7 @@ PG_FUNCTION_INFO_V1(lev_dist);
 Datum
 lev_dist(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "w");
+    FILE *log_file = fopen("logfile.txt", "w");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -420,7 +533,7 @@ lev_dist(PG_FUNCTION_ARGS)
 
     int distance = levenshtein_distance_algo(str1, str2);
 
-    elog(INFO, "Lev distance between %s and %s equals to %d", str1, str2, distance);
+    elog(INFO, "Lev distance between %s and %s is equals to %d", str1, str2, distance);
 
     PG_RETURN_INT32(distance);
 }
@@ -431,7 +544,7 @@ PG_FUNCTION_INFO_V1(simple_match);
 Datum
 simple_match(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "w");
+    FILE *log_file = fopen("logfile.txt", "w");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -446,7 +559,7 @@ simple_match(PG_FUNCTION_ARGS)
 
     int distance = simple_match_algo(str1, str2);
 
-    elog(INFO, "Distance between %s and %s equals to %d", str1, str2, distance);
+    elog(INFO, "Distance between %s and %s is equals to %d", str1, str2, distance);
 
     PG_RETURN_INT32(distance);
 }
@@ -457,7 +570,7 @@ PG_FUNCTION_INFO_V1(trigram_match);
 Datum
 trigram_match(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "w");
+    FILE *log_file = fopen("logfile.txt", "w");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -472,7 +585,7 @@ trigram_match(PG_FUNCTION_ARGS)
 
     float distance = trigram_match_algo(str1, str2);
 
-    elog(INFO, "Trigram distance between %s and %s equals to %f", str1, str2, floor( distance*100 )/100);
+    elog(INFO, "Trigram distance between %s and %s is equals to %f", str1, str2, floor( distance*100 )/100);
 
     PG_RETURN_FLOAT8(floor( distance*100 )/100);
 }
@@ -483,7 +596,7 @@ PG_FUNCTION_INFO_V1(jw_dist);
 Datum
 jw_dist(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "w");
+    FILE *log_file = fopen("logfile.txt", "w"); // /home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -499,7 +612,56 @@ jw_dist(PG_FUNCTION_ARGS)
 
     float distance = jaro_winkler_distance_algo(str1, str2, jw_boost_factor);
 
-    elog(INFO, "Jaro-Winkler distance between %s and %s equals to %f", str1, str2, floor( distance*100 )/100);
+    elog(INFO, "Jaro-Winkler distance between %s and %s is equals to %f", str1, str2, floor( distance*100 )/100);
 
     PG_RETURN_FLOAT8(floor( distance*100 )/100);
+}
+
+
+PG_FUNCTION_INFO_V1(bitap);
+
+Datum
+bitap(PG_FUNCTION_ARGS)
+{
+    FILE *log_file = fopen("logfile.txt", "w"); // /home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/
+
+    if (log_file == NULL) {
+        elog(ERROR, "Failed to open log file.");
+        PG_RETURN_NULL();
+    }
+
+    text* text_a = PG_GETARG_TEXT_P(0);
+    text* text_b = PG_GETARG_TEXT_P(1);
+
+    char* str1 = text_to_cstring(text_a);
+    char* str2 = text_to_cstring(text_b);
+    int errors = get_errors();
+
+    PG_RETURN_BOOL(bitap_algo(str1, str2, errors));
+}
+
+
+PG_FUNCTION_INFO_V1(wf);
+
+Datum
+wf(PG_FUNCTION_ARGS)
+{
+    FILE *log_file = fopen("logfile.txt", "w");
+
+    if (log_file == NULL) {
+        elog(ERROR, "Failed to open log file.");
+        PG_RETURN_NULL();
+    }
+
+    text* text_a = PG_GETARG_TEXT_P(0);
+    text* text_b = PG_GETARG_TEXT_P(1);
+
+    char* str1 = text_to_cstring(text_a);
+    char* str2 = text_to_cstring(text_b);
+
+    int distance = wagner_fischer_algo(str1, str2);
+
+    elog(INFO, "WF distance between %s and %s is equals to %d", str1, str2, distance);
+
+    PG_RETURN_INT32(distance);
 }
