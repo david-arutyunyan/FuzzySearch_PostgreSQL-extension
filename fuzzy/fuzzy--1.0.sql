@@ -33,6 +33,11 @@
 --   $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION comp(str1 VARCHAR(100), str2 VARCHAR(100))
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'compare_strings_with_timing'
+LANGUAGE C IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION fuzzy_search(str1 VARCHAR(100), str2 VARCHAR(100))
 RETURNS boolean
 AS 'MODULE_PATHNAME', 'fuzzy_search'

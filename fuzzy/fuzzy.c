@@ -10,6 +10,8 @@
 #include <math.h>
 #include "settings.h"
 #include <ctype.h>
+#include <time.h>
+#include "utils/timestamp.h"
 
 
 
@@ -665,3 +667,123 @@ wf(PG_FUNCTION_ARGS)
 
     PG_RETURN_INT32(distance);
 }
+
+
+void add_time(double new_time) {
+    FILE *fp;
+    double num, result;
+
+    elog(INFO, "AAA");
+    // Open the file for reading
+    fp = fopen("logfile.txt", "r");
+    if (fp == NULL) {
+        elog(ERROR, "Error opening file\n");
+        return;
+    }
+
+    elog(INFO, "BBB");
+    // Read the integer from the file
+    fscanf(fp, "%lf", &num);
+//    if (fscanf(fp, "%lf", &num) != 1) {
+//        elog(ERROR, "Error reading double from file\n");
+//        fclose(fp);
+//        return;
+//    }
+
+    elog(INFO, "AAA: %lf + %lf", num, new_time);
+    // Perform some operation on the integer
+    result = num + new_time;
+
+    // Close the file for reading
+    fclose(fp);
+
+    // Open the file for writing
+    fp = fopen("logfile.txt", "w");
+    if (fp == NULL) {
+        printf("Error opening file\n");
+        return;
+    }
+
+    fprintf(fp, "%lf", result);
+    // Write the result to the file
+//    if (fprintf(fp, "%lf", result) < 0) {
+//        printf("Error writing result to file\n");
+//        fclose(fp);
+//        return;
+//    }
+
+    // Close the file for writing
+    fclose(fp);
+}
+
+static double total_time = 0.0;
+
+PG_FUNCTION_INFO_V1(compare_strings_with_timing);
+
+Datum compare_strings_with_timing(PG_FUNCTION_ARGS)
+{
+    text *col1 = PG_GETARG_TEXT_PP(0);
+    text *col2 = PG_GETARG_TEXT_PP(1);
+    int32 cmp_result = 0;
+
+    clock_t start_time = clock();
+
+    cmp_result = pg_strcasecmp(text_to_cstring(col1), text_to_cstring(col2));
+
+    clock_t end_time = clock();
+    double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
+//    add_time(elapsed_time);
+    total_time += elapsed_time
+    elog(NOTICE, "compare_strings execution time: %f seconds", total_time);
+
+    PG_RETURN_BOOL(cmp_result == 0);
+}
+
+
+
+
+//static double total_time = 0.0;
+//static TimestampTz start_time;
+//
+//void my_before_func_hook(FunctionCallInfo fcinfo);
+//void my_after_func_hook(FunctionCallInfo fcinfo);
+//
+//PG_FUNCTION_INFO_V1(compare_strings_with_timing);
+//
+//Datum compare_strings_with_timing(PG_FUNCTION_ARGS)
+//{
+//    text *col1 = PG_GETARG_TEXT_PP(0);
+//    text *col2 = PG_GETARG_TEXT_PP(1);
+//    int32 cmp_result = 0;
+//
+//    cmp_result = pg_strcasecmp(text_to_cstring(col1), text_to_cstring(col2));
+//
+//    PG_RETURN_BOOL(cmp_result == 0);
+//}
+//
+//void my_before_func_hook(FunctionCallInfo fcinfo)
+//{
+//    start_time = GetCurrentTimestamp();
+//}
+//
+//void my_after_func_hook(FunctionCallInfo fcinfo)
+//{
+//    TimestampTz end_time = GetCurrentTimestamp();
+//    double elapsed_time = (double)(end_time - start_time) / 1000000.0;
+//    elog(NOTICE, "compare_strings execution time: %f seconds", elapsed_time);
+//    elog(NOTICE, "compare_strings execution time2: %f seconds", total_time);
+//
+//    total_time += elapsed_time;
+//
+//    FILE *fp;
+//    fp = fopen("/tmp/compare_strings_timing.txt", "w");
+//    fprintf(fp, "%f\n", total_time);
+//    fclose(fp);
+//}
+//
+//void _PG_init(void)
+//{
+//    RegisterXactCallback(my_before_func_hook, NULL);
+//    RegisterXactCallback(my_after_func_hook, NULL);
+//}
