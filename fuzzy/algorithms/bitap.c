@@ -9,7 +9,7 @@
 //    return max_errors;
 //}
 
-#define ALPHABET_SIZE 71
+#define ALPHABET_SIZE 74
 
 uint64_t* generateAlphabetMasks(const char* alphabet, const char* needle) {
     uint64_t* masks = malloc(INT16_MAX);
@@ -42,7 +42,7 @@ uint64_t* generateBitArray(int lev) {
         return NULL;
     }
 
-    for (int k = 0; k <= lev; k++) {
+    for (int k = 0; k <= lev; ++k) {
         bitArray[k] = ~1;
     }
 
@@ -116,6 +116,11 @@ Datum bitap(PG_FUNCTION_ARGS)
     char* str2 = text_to_cstring(text_b);
     int errors = PG_GETARG_INT32(2);
 
+    if (errors <= 0) {
+//        elog(INFO, "CMP: %d", strcmp(str1, str2));
+        PG_RETURN_BOOL(strcmp(str1, str2) == 0 ? true : false);
+    }
+
     char* haystack = malloc((strlen(str1) + 2) * sizeof(char));
     char* needle = str2;
     strcpy(haystack, str1);
@@ -130,7 +135,7 @@ Datum bitap(PG_FUNCTION_ARGS)
 
     elog(INFO, "BITAP: %s, %s, %d", haystack, needle, errors);
 
-    PG_RETURN_BOOL(bitap_algo(haystack, needle, errors, "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ1234567890 &"));
+    PG_RETURN_BOOL(bitap_algo(haystack, needle, errors-1, "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ1234567890!.? &"));
 }
 
 //Datum get_max_errors(PG_FUNCTION_ARGS) {

@@ -41,6 +41,10 @@ typedef struct {
     TriePtr children[];
 } Trie;
 
+Trie* grow(Trie* trie);
+
+int ptr_cmp(void* a, void* b);
+
 Trie* trie_create(int size);
 
 void trie_insert(Trie* trie, char* key, void* data);
