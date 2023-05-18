@@ -8,6 +8,7 @@ PG_FUNCTION_INFO_V1(bitap);
 //PG_FUNCTION_INFO_V1(set_max_errors);
 
 PG_FUNCTION_INFO_V1(lev_dist);
+PG_FUNCTION_INFO_V1(lev_dist_by_words);
 
 PG_FUNCTION_INFO_V1(simple_match);
 PG_FUNCTION_INFO_V1(simple_match_by_words);
