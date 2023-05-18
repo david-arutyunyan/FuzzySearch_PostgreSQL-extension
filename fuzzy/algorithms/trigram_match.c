@@ -79,7 +79,7 @@ double trigram_match_algo(const char *s1, const char *s2) {
 
 Datum trigram_match(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("logfile.txt", "w");
+    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/trigram_match_logfile.txt", "a");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -95,9 +95,64 @@ Datum trigram_match(PG_FUNCTION_ARGS)
     to_upper_case(str1);
     to_upper_case(str2);
 
+    clock_t start_time = clock();
+
     float distance = floor(trigram_match_algo(str1, str2) * 100) / 100;
+
+    clock_t end_time = clock();
+
+    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
+
+    fprintf(log_file, "%lf\n", elapsed_time);
+    fclose(log_file);
 
     elog(INFO, "Trigram distance between %s and %s is equals to %f", str1, str2, distance);
 
     PG_RETURN_FLOAT8(distance);
+}
+
+
+Datum trigram_match_by_words(PG_FUNCTION_ARGS)
+{
+    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/trigram_match_by_words_logfile.txt", "a");
+
+    if (log_file == NULL) {
+        elog(ERROR, "Failed to open log file.");
+        PG_RETURN_NULL();
+    }
+
+    text* text_a = PG_GETARG_TEXT_P(0);
+    text* text_b = PG_GETARG_TEXT_P(1);
+
+    char* str1 = text_to_cstring(text_a);
+    char* str2 = text_to_cstring(text_b);
+
+    to_upper_case(str1);
+    to_upper_case(str2);
+
+    SplitStr sstr1 = tokenize(str1);
+
+    float max_dist = 0;
+    float distance = 0;
+
+    clock_t start_time = clock();
+
+    for (int i = 0; i < sstr1.size; ++i) {
+        distance = floor(trigram_match_algo(sstr1.words[i], str2) * 100) / 100;
+
+        if (distance > max_dist) {
+            max_dist = distance;
+        }
+
+        elog(INFO, "Trigram distance between %s and %s is equals to %f", sstr1.words[i], str2, distance);
+    }
+
+    clock_t end_time = clock();
+
+    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
+
+    fprintf(log_file, "%lf\n", elapsed_time);
+    fclose(log_file);
+
+    PG_RETURN_FLOAT8(max_dist);
 }

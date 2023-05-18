@@ -4,5 +4,6 @@
 #include "utils.h"
 
 Datum trigram_match(PG_FUNCTION_ARGS);
+Datum trigram_match_by_words(PG_FUNCTION_ARGS);
 
 #endif

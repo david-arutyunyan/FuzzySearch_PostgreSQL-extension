@@ -19,6 +19,7 @@ PG_FUNCTION_INFO_V1(jw_dist);
 PG_FUNCTION_INFO_V1(wf);
 
 PG_FUNCTION_INFO_V1(trigram_match);
+PG_FUNCTION_INFO_V1(trigram_match_by_words);
 
 //// --------------------------------------------------------------------------------------------
 //#include "postgres.h"

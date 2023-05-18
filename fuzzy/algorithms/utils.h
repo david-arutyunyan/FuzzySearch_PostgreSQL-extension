@@ -18,6 +18,7 @@
 #include "executor/spi.h"
 #include "funcapi.h"
 #include "ctype.h"
+#include <unistd.h>
 
 typedef struct {
     int size;
