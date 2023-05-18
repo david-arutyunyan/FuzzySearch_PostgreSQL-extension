@@ -61,4 +61,6 @@ int cmp(char* a, char* b);
 
 int cmp_ss(void* a, void* b);
 
+void to_upper_case(char* str);
+
 #endif

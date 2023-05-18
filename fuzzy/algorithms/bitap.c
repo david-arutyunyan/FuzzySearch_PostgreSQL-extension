@@ -93,15 +93,9 @@ bool bitap_algo(const char* haystack, const char* needle, int errors, const char
     return false;
 }
 
-void toUperCase(char* str) {
-    while (*str != '\0') {
-        *str = toupper(*str);
-        str++;
-    }
-}
-
 Datum bitap(PG_FUNCTION_ARGS)
 {
+    char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ1234567890!.? &";
     FILE *log_file = fopen("logfile.txt", "w"); // /home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/
 
     if (log_file == NULL) {
@@ -117,7 +111,6 @@ Datum bitap(PG_FUNCTION_ARGS)
     int errors = PG_GETARG_INT32(2);
 
     if (errors <= 0) {
-//        elog(INFO, "CMP: %d", strcmp(str1, str2));
         PG_RETURN_BOOL(strcmp(str1, str2) == 0 ? true : false);
     }
 
@@ -127,15 +120,15 @@ Datum bitap(PG_FUNCTION_ARGS)
     haystack[strlen(str1)] = '&';
     haystack[strlen(str1) + 1] = '\0';
 
-    toUperCase(haystack);
-    toUperCase(str2);
+    to_upper_case(haystack);
+    to_upper_case(str2);
 
     fflush(log_file);
     fclose(log_file);
 
     elog(INFO, "BITAP: %s, %s, %d", haystack, needle, errors);
 
-    PG_RETURN_BOOL(bitap_algo(haystack, needle, errors-1, "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ1234567890!.? &"));
+    PG_RETURN_BOOL(bitap_algo(haystack, needle, errors-1, alphabet));
 }
 
 //Datum get_max_errors(PG_FUNCTION_ARGS) {

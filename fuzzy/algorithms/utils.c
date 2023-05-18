@@ -201,3 +201,12 @@ int cmp_ss(void* a, void* b)
 {
     return cmp(*(char**)a, *(char**)b);
 }
+
+
+void to_upper_case(char* str)
+{
+    while (*str != '\0') {
+        *str = toupper(*str);
+        str++;
+    }
+}
