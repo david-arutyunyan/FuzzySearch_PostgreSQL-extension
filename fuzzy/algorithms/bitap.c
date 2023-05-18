@@ -1,5 +1,4 @@
 #include "bitap.h"
-#include "ctype.h"
 //void set_errors(int value)
 //{
 //    max_errors = value;
