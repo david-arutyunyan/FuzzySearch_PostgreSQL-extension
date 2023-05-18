@@ -117,6 +117,10 @@ Datum jw_dist(PG_FUNCTION_ARGS)
 
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
+
+    to_upper_case(str1);
+    to_upper_case(str2);
+
     float scale_factor = PG_GETARG_FLOAT8(2);
     float max_distance = PG_GETARG_FLOAT8(3);
 

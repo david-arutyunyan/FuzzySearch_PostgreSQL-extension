@@ -61,6 +61,9 @@ Datum wf(PG_FUNCTION_ARGS)
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
 
+    to_upper_case(str1);
+    to_upper_case(str2);
+
     int distance = wagner_fischer_algo(str1, str2);
 
     elog(INFO, "Wagner-Fisher distance between %s and %s is equals to %d", str1, str2, distance);

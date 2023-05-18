@@ -92,6 +92,9 @@ Datum trigram_match(PG_FUNCTION_ARGS)
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
 
+    to_upper_case(str1);
+    to_upper_case(str2);
+
     float distance = floor(trigram_match_algo(str1, str2) * 100) / 100;
 
     elog(INFO, "Trigram distance between %s and %s is equals to %f", str1, str2, distance);

@@ -39,6 +39,9 @@ Datum simple_match(PG_FUNCTION_ARGS)
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
 
+    to_upper_case(str1);
+    to_upper_case(str2);
+
     int distance = simple_match_algo(str1, str2);
 
     elog(INFO, "Distance between %s and %s is equals to %d", str1, str2, distance);
