@@ -11,6 +11,7 @@
 #include <time.h>
 #include "utils/timestamp.h"
 #include <stdint.h>
+#include <access/htup_details.h>
 
 //#include "settings.h"
 
