@@ -11,56 +11,6 @@
 //    return floor(boost_factor*100)/100;
 //}
 
-//double jaro_winkler_distance_algo(const char *s1, const char *s2, double jw_boost_factor)
-//{
-//    size_t n1 = strlen(s1);
-//    size_t n2 = strlen(s2);
-//    if (n1 == 0 || n2 == 0) {
-//        return 0.0;
-//    }
-//    if (n1 > n2) {
-//        const char *tmp = s1;
-//        s1 = s2;
-//        s2 = tmp;
-//        size_t tmpn = n1;
-//        n1 = n2;
-//        n2 = tmpn;
-//    }
-//    size_t match_distance = (n2 / 2) - 1;
-//    bool *s2_matches = (bool *) calloc(n2, sizeof(bool));
-//    size_t matches = 0;
-//    for (size_t i = 0; i < n1; i++) {
-//        size_t start = (i >= match_distance) ? (i - match_distance) : 0;
-//        size_t end = (i + match_distance + 1 < n2) ? (i + match_distance + 1) : n2;
-//        for (size_t j = start; j < end; j++) {
-//            if (!s2_matches[j] && s1[i] == s2[j]) {
-//                s2_matches[j] = true;
-//                matches++;
-//                break;
-//            }
-//        }
-//    }
-//    free(s2_matches);
-//    if (matches == 0) {
-//        return 0.0;
-//    }
-//    double jaro_similarity = ((double) matches) / ((double) n1 + n2 - matches);
-//    if (jaro_similarity < 0.7) {
-//        return jaro_similarity;
-//    }
-//    size_t prefix_len = 0;
-//    for (size_t i = 0; i < n1 && i < n2 && s1[i] == s2[i]; i++) {
-//        prefix_len++;
-//    }
-//    double jaro_winkler_distance = jaro_similarity + (prefix_len * jw_boost_factor * (1.0 - jaro_similarity));
-//    return jaro_winkler_distance;
-//}
-
-
-
-#define PREFIX_MATCH_SCALE_FACTOR 0.1
-#define MAX_MATCH_DISTANCE 0.7
-
 double jaro_distance(const char *s1, const char *s2) {
     int len1 = strlen(s1);
     int len2 = strlen(s2);
