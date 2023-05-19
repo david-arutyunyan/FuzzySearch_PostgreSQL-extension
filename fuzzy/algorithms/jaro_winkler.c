@@ -105,7 +105,7 @@ float jaro_winkler_distance_algo(const char *s1, const char *s2, float prefix_sc
 
 Datum jw_dist(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/jw_dist_logfile.txt", "w");
+    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/jw_dist_logfile.txt", "a");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
