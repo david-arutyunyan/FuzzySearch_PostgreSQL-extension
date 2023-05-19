@@ -14,6 +14,7 @@ PG_FUNCTION_INFO_V1(simple_match);
 PG_FUNCTION_INFO_V1(simple_match_by_words);
 
 PG_FUNCTION_INFO_V1(jw_dist);
+PG_FUNCTION_INFO_V1(jw_dist_by_words);
 //PG_FUNCTION_INFO_V1(get_bfactor);
 //PG_FUNCTION_INFO_V1(set_bfactor);
 

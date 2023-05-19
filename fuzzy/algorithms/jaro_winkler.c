@@ -11,7 +11,7 @@
 //    return floor(boost_factor*100)/100;
 //}
 
-double jaro_distance(const char *s1, const char *s2) {
+float jaro_distance(const char *s1, const char *s2) {
     int len1 = strlen(s1);
     int len2 = strlen(s2);
 
@@ -60,7 +60,7 @@ double jaro_distance(const char *s1, const char *s2) {
         return 0.0;
     }
 
-    double transpositions = 0.0;
+    float transpositions = 0.0;
     int index = 0;
 
     for (int i = 0; i < len1; i++) {
@@ -79,22 +79,22 @@ double jaro_distance(const char *s1, const char *s2) {
         index++;
     }
 
-    double jaro_similarity = ((double)matches / len1 + (double)matches / len2 + ((double)matches - transpositions / 2) / matches) / 3;
+    float jaro_similarity = ((float)matches / len1 + (float)matches / len2 + ((float)matches - transpositions / 2) / matches) / 3;
     free(s1_matches);
     free(s2_matches);
 
     return jaro_similarity;
 }
 
-double jaro_winkler_distance_algo(const char *s1, const char *s2, double prefix_scale_factor, double max_distance) {
-    double jaro_similarity = jaro_distance(s1, s2);
+float jaro_winkler_distance_algo(const char *s1, const char *s2, float prefix_scale_factor, float max_distance) {
+    float jaro_similarity = jaro_distance(s1, s2);
     int prefix_length = 0;
 
     while (s1[prefix_length] == s2[prefix_length] && prefix_length < 4) {
         prefix_length++;
     }
 
-    double jaro_winkler_similarity = jaro_similarity + prefix_length * prefix_scale_factor * (1.0 - jaro_similarity);
+    float jaro_winkler_similarity = jaro_similarity + prefix_length * prefix_scale_factor * (1.0 - jaro_similarity);
 
     if (jaro_winkler_similarity > max_distance) {
         return max_distance;
@@ -105,7 +105,7 @@ double jaro_winkler_distance_algo(const char *s1, const char *s2, double prefix_
 
 Datum jw_dist(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("logfile.txt", "w"); // /home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/
+    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/jw_dist_logfile.txt", "w");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -124,11 +124,67 @@ Datum jw_dist(PG_FUNCTION_ARGS)
     float scale_factor = PG_GETARG_FLOAT8(2);
     float max_distance = PG_GETARG_FLOAT8(3);
 
+    clock_t start_time = clock();
+
     float distance = jaro_winkler_distance_algo(str1, str2, scale_factor, max_distance);
+
+    clock_t end_time = clock();
+
+    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
+
+    fprintf(log_file, "%lf\n", elapsed_time);
+    fclose(log_file);
 
     elog(INFO, "Jaro-Winkler distance between %s and %s is equals to %f", str1, str2, distance);
 
     PG_RETURN_FLOAT8(distance);
+}
+
+Datum jw_dist_by_words(PG_FUNCTION_ARGS)
+{
+    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/jw_dist_by_words_logfile.txt", "a");
+
+    if (log_file == NULL) {
+        elog(ERROR, "Failed to open log file.");
+        PG_RETURN_NULL();
+    }
+
+    text* text_a = PG_GETARG_TEXT_P(0);
+    text* text_b = PG_GETARG_TEXT_P(1);
+    float scale_factor = PG_GETARG_FLOAT8(2);
+    float max_distance = PG_GETARG_FLOAT8(3);
+
+    char* str1 = text_to_cstring(text_a);
+    char* str2 = text_to_cstring(text_b);
+
+    to_upper_case(str1);
+    to_upper_case(str2);
+
+    SplitStr sstr1 = tokenize(str1);
+
+    float max_dist = 0;
+    float distance = 0;
+
+    clock_t start_time = clock();
+
+    for (int i = 0; i < sstr1.size; ++i) {
+        distance = jaro_winkler_distance_algo(sstr1.words[i], str2, scale_factor, max_distance);
+
+        if (distance > max_dist) {
+            max_dist = distance;
+        }
+
+        elog(INFO, "Jaro-Winkler distance between %s and %s is equals to %f", sstr1.words[i], str2, distance);
+    }
+
+    clock_t end_time = clock();
+
+    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
+
+    fprintf(log_file, "%lf\n", elapsed_time);
+    fclose(log_file);
+
+    PG_RETURN_FLOAT8(max_dist);
 }
 
 //Datum get_bfactor(PG_FUNCTION_ARGS) {
