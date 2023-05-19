@@ -4,8 +4,8 @@ PG_MODULE_MAGIC;
 
 
 PG_FUNCTION_INFO_V1(bitap);
-//PG_FUNCTION_INFO_V1(get_max_errors);
-//PG_FUNCTION_INFO_V1(set_max_errors);
+PG_FUNCTION_INFO_V1(get_max_errors);
+PG_FUNCTION_INFO_V1(set_max_errors);
 
 PG_FUNCTION_INFO_V1(lev_dist);
 PG_FUNCTION_INFO_V1(lev_dist_by_words);

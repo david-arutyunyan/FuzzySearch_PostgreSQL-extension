@@ -1,13 +1,16 @@
 #include "bitap.h"
-//void set_errors(int value)
-//{
-//    max_errors = value;
-//}
-//
-//int get_errors(void)
-//{
-//    return max_errors;
-//}
+
+int max_errors = 2;
+
+void set_errors(int value)
+{
+    max_errors = value;
+}
+
+int get_errors(void)
+{
+    return max_errors;
+}
 
 #define ALPHABET_SIZE 75
 
@@ -108,7 +111,7 @@ Datum bitap(PG_FUNCTION_ARGS)
 
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
-    int errors = PG_GETARG_INT32(2);
+    int errors = get_errors(); //PG_GETARG_INT32(2);
 
     bool res = false;
 
@@ -151,10 +154,10 @@ Datum bitap(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(res);
 }
 
-//Datum get_max_errors(PG_FUNCTION_ARGS) {
-//    PG_RETURN_INT32(get_errors());
-//}
-//
-//Datum set_max_errors(PG_FUNCTION_ARGS) {
-//    set_errors(PG_GETARG_INT32(0));
-//}
+Datum get_max_errors(PG_FUNCTION_ARGS) {
+    PG_RETURN_INT32(get_errors());
+}
+
+Datum set_max_errors(PG_FUNCTION_ARGS) {
+    set_errors(PG_GETARG_INT32(0));
+}
