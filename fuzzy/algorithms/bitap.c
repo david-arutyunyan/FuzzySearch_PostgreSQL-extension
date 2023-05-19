@@ -20,10 +20,10 @@ uint64_t* generateAlphabetMasks(const char* alphabet, const char* needle) {
 
     size_t needleLen = strlen(needle);
 
-    for (int i = 0; i < ALPHABET_SIZE; i++) {
+    for (int i = 0; i < ALPHABET_SIZE; ++i) {
         uint64_t mask = ~0;
 
-        for (int pos = 0; pos < needleLen; pos++) {
+        for (int pos = 0; pos < needleLen; ++pos) {
             if (alphabet[i] == needle[needleLen - 1 - pos]) {
                 mask &= ~(1UL << pos);
             }
@@ -71,7 +71,7 @@ bool bitap_algo(const char* haystack, const char* needle, int errors, const char
         bitArray[0] = (old[0] << 1) | alphabetMasks[(int)haystack[i]];
 
         if (errors > 0) {
-            for (int k = 1; k <= errors; k++) {
+            for (int k = 1; k <= errors; ++k) {
                 uint64_t ins = old[k - 1];
                 uint64_t sub = ins << 1;
                 uint64_t del = bitArray[k - 1] << 1;

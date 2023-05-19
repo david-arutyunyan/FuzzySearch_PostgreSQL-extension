@@ -8,8 +8,8 @@ double jaccard_similarity(char **trigrams1, int count1, char **trigrams2, int co
     int intersection = 0;
     int union_size = count1 + count2;
 
-    for (i = 0; i < count1; i++) {
-        for (j = 0; j < count2; j++) {
+    for (i = 0; i < count1; ++i) {
+        for (j = 0; j < count2; ++j) {
             if (strcmp(trigrams1[i], trigrams2[j]) == 0) {
                 intersection++;
                 break;
@@ -32,14 +32,14 @@ void get_trigrams(const char *str, char **trigrams, int *count) {
     int len = strlen(str);
     char buf[4] = "";
 
-    for (i = 0; i < len - 2 && *count < MAX_TRIGRAMS; i++) {
+    for (i = 0; i < len - 2 && *count < MAX_TRIGRAMS; ++i) {
         buf[0] = str[i];
         buf[1] = str[i+1];
         buf[2] = str[i+2];
         buf[3] = '\0';
 
         // check for duplicates
-        for (j = 0; j < *count; j++) {
+        for (j = 0; j < *count; ++j) {
             if (strcmp(buf, trigrams[j]) == 0) {
                 break;
             }
@@ -66,11 +66,11 @@ double trigram_match_algo(const char *s1, const char *s2) {
     similarity = jaccard_similarity(trigrams1, count1, trigrams2, count2);
 
     // free memory
-    for (i = 0; i < count1; i++) {
+    for (i = 0; i < count1; ++i) {
         free(trigrams1[i]);
     }
 
-    for (i = 0; i < count2; i++) {
+    for (i = 0; i < count2; ++i) {
         free(trigrams2[i]);
     }
 

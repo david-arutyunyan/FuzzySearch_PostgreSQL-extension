@@ -18,14 +18,14 @@ int wagner_fischer_algo(char* s1, char* s2) {
     int* prev_row = (int*) calloc(n + 1, sizeof(int));
     int* curr_row = (int*) calloc(n + 1, sizeof(int));
 
-    for (int j = 0; j <= n; j++) {
+    for (int j = 0; j <= n; ++j) {
         prev_row[j] = j;
     }
 
-    for (int i = 1; i <= m; i++) {
+    for (int i = 1; i <= m; ++i) {
         curr_row[0] = i;
 
-        for (int j = 1; j <= n; j++) {
+        for (int j = 1; j <= n; ++j) {
             int cost = s1[i-1] == s2[j-1] ? 0 : 1;
             curr_row[j] = min(
                     curr_row[j-1] + 1,

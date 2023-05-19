@@ -1,15 +1,27 @@
 #include "jaro_winkler.h"
 
+float scale_factor = 0.2f;
+float max_dist = 1.0f;
 
-//void set_boost_factor(float value)
-//{
-//    boost_factor = value;
-//}
-//
-//float get_boost_factor(void)
-//{
-//    return floor(boost_factor*100)/100;
-//}
+void set_scale_factor(float value)
+{
+    scale_factor = value;
+}
+
+float get_scale_factor(void)
+{
+    return floor(scale_factor*100)/100;
+}
+
+void set_dist(float value)
+{
+    max_dist = value;
+}
+
+float get_dist(void)
+{
+    return floor(max_dist*100)/100;
+}
 
 float jaro_distance(const char *s1, const char *s2) {
     int len1 = strlen(s1);
@@ -24,21 +36,21 @@ float jaro_distance(const char *s1, const char *s2) {
     int *s1_matches = malloc(len1 * sizeof(int));
     int *s2_matches = malloc(len2 * sizeof(int));
 
-    for (int i = 0; i < len1; i++) {
+    for (int i = 0; i < len1; ++i) {
         s1_matches[i] = -1;
     }
 
-    for (int i = 0; i < len2; i++) {
+    for (int i = 0; i < len2; ++i) {
         s2_matches[i] = -1;
     }
 
     int matches = 0;
 
-    for (int i = 0; i < len1; i++) {
+    for (int i = 0; i < len1; ++i) {
         int start = fmax(0, i - match_distance);
         int end = fmin(i + match_distance + 1, len2);
 
-        for (int j = start; j < end; j++) {
+        for (int j = start; j < end; ++j) {
             if (s2_matches[j] != -1) {
                 continue;
             }
@@ -63,7 +75,7 @@ float jaro_distance(const char *s1, const char *s2) {
     float transpositions = 0.0;
     int index = 0;
 
-    for (int i = 0; i < len1; i++) {
+    for (int i = 0; i < len1; ++i) {
         if (s1_matches[i] == -1) {
             continue;
         }
@@ -121,12 +133,12 @@ Datum jw_dist(PG_FUNCTION_ARGS)
     to_upper_case(str1);
     to_upper_case(str2);
 
-    float scale_factor = PG_GETARG_FLOAT8(2);
-    float max_distance = PG_GETARG_FLOAT8(3);
+//    float scale_factor = get_scale_factor(); //PG_GETARG_FLOAT8(2);
+//    float max_distance = get_max_dist(); //PG_GETARG_FLOAT8(3);
 
     clock_t start_time = clock();
 
-    float distance = jaro_winkler_distance_algo(str1, str2, scale_factor, max_distance);
+    float distance = jaro_winkler_distance_algo(str1, str2, get_scale_factor(), get_dist());
 
     clock_t end_time = clock();
 
@@ -151,8 +163,8 @@ Datum jw_dist_by_words(PG_FUNCTION_ARGS)
 
     text* text_a = PG_GETARG_TEXT_P(0);
     text* text_b = PG_GETARG_TEXT_P(1);
-    float scale_factor = PG_GETARG_FLOAT8(2);
-    float max_distance = PG_GETARG_FLOAT8(3);
+//    float scale_factor = get_scale_factor(); //PG_GETARG_FLOAT8(2);
+//    float max_distance = get_max_dist(); //PG_GETARG_FLOAT8(3);
 
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
@@ -168,7 +180,7 @@ Datum jw_dist_by_words(PG_FUNCTION_ARGS)
     clock_t start_time = clock();
 
     for (int i = 0; i < sstr1.size; ++i) {
-        distance = jaro_winkler_distance_algo(sstr1.words[i], str2, scale_factor, max_distance);
+        distance = jaro_winkler_distance_algo(sstr1.words[i],str2,get_scale_factor(), get_dist());
 
         if (distance > max_dist) {
             max_dist = distance;
@@ -187,10 +199,18 @@ Datum jw_dist_by_words(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(max_dist);
 }
 
-//Datum get_bfactor(PG_FUNCTION_ARGS) {
-//    PG_RETURN_FLOAT8(floor( get_boost_factor()*100 )/100);
-//}
-//
-//Datum set_bfactor(PG_FUNCTION_ARGS) {
-//    set_boost_factor(PG_GETARG_FLOAT8(0));
-//}
+Datum get_sfactor(PG_FUNCTION_ARGS) {
+    PG_RETURN_FLOAT8(floor( get_scale_factor()*100 )/100);
+}
+
+Datum set_sfactor(PG_FUNCTION_ARGS) {
+    set_scale_factor(PG_GETARG_FLOAT8(0));
+}
+
+Datum get_max_dist(PG_FUNCTION_ARGS) {
+    PG_RETURN_FLOAT8(floor( get_dist()*100 )/100);
+}
+
+Datum set_max_dist(PG_FUNCTION_ARGS) {
+    set_dist(PG_GETARG_FLOAT8(0));
+}

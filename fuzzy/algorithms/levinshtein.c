@@ -5,21 +5,21 @@ int levenshtein_distance_algo(const char *s1, const char *s2)
     size_t n = strlen(s1);
     size_t m = strlen(s2);
     int **d = (int **) malloc((n+1) * sizeof(int *));
-    for (size_t i = 0; i <= n; i++) {
+    for (size_t i = 0; i <= n; ++i) {
         d[i] = (int *) malloc((m+1) * sizeof(int));
         d[i][0] = i;
     }
-    for (size_t j = 0; j <= m; j++) {
+    for (size_t j = 0; j <= m; ++j) {
         d[0][j] = j;
     }
-    for (size_t j = 1; j <= m; j++) {
-        for (size_t i = 1; i <= n; i++) {
+    for (size_t j = 1; j <= m; ++j) {
+        for (size_t i = 1; i <= n; ++i) {
             int cost = (s1[i-1] == s2[j-1]) ? 0 : 1;
             d[i][j] = fmin(fmin(d[i-1][j]+1, d[i][j-1]+1), d[i-1][j-1]+cost);
         }
     }
     int result = d[n][m];
-    for (size_t i = 0; i <= n; i++) {
+    for (size_t i = 0; i <= n; ++i) {
         free(d[i]);
     }
     free(d);
