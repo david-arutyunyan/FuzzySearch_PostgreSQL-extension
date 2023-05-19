@@ -9,7 +9,7 @@
 //    return max_errors;
 //}
 
-#define ALPHABET_SIZE 74
+#define ALPHABET_SIZE 75
 
 uint64_t* generateAlphabetMasks(const char* alphabet, const char* needle) {
     uint64_t* masks = malloc(INT16_MAX);
@@ -95,7 +95,7 @@ bool bitap_algo(const char* haystack, const char* needle, int errors, const char
 
 Datum bitap(PG_FUNCTION_ARGS)
 {
-    char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ1234567890!.? &";
+    char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ1234567890.,!? &";
     FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/bitap_logfile.txt", "a");
 
     if (log_file == NULL) {
@@ -110,10 +110,6 @@ Datum bitap(PG_FUNCTION_ARGS)
     char* str2 = text_to_cstring(text_b);
     int errors = PG_GETARG_INT32(2);
 
-    if (errors <= 0) {
-        PG_RETURN_BOOL(strcmp(str1, str2) == 0 ? true : false);
-    }
-
     char* haystack = malloc((strlen(str1) + 2) * sizeof(char));
     char* needle = str2;
     strcpy(haystack, str1);
@@ -125,9 +121,29 @@ Datum bitap(PG_FUNCTION_ARGS)
 
     elog(INFO, "BITAP: %s, %s, %d", haystack, needle, errors);
 
+    SplitStr new_haystak = tokenize(haystack);
+
+    bool res = false;
+
     clock_t start_time = clock();
 
-    bool res = bitap_algo(haystack, needle, errors-1, alphabet);
+    if (errors == 0) {
+        elog(INFO, "A");
+        char* needle2 = malloc((strlen(str2) + 2) * sizeof(char));
+        strcpy(needle2, str2);
+        needle2[strlen(str2)] = '&';
+        needle2[strlen(str2) + 1] = '\0';
+
+        for (int i = 0; i < new_haystak.size; ++i) {
+            if (strcmp(new_haystak.words[i], needle2) == 0) {
+                PG_RETURN_BOOL(true);
+            }
+        }
+        PG_RETURN_BOOL(false);
+    } else {
+        elog(INFO, "B");
+        res = bitap_algo(haystack, needle, errors-1, alphabet);
+    }
 
     clock_t end_time = clock();
 
