@@ -114,6 +114,10 @@ Datum trigram_match(PG_FUNCTION_ARGS)
 
 Datum trigram_match_by_words(PG_FUNCTION_ARGS)
 {
+    if (strcmp(text_to_cstring(PG_GETARG_TEXT_P(2)), "BW") != 0) {
+        elog(ERROR, "To search by words the last argument must be 'BW'");
+    }
+
     FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/trigram_match_by_words_logfile.txt", "a");
 
     if (log_file == NULL) {

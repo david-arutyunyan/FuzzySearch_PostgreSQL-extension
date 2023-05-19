@@ -82,6 +82,10 @@ Datum wf(PG_FUNCTION_ARGS)
 
 Datum wf_by_words(PG_FUNCTION_ARGS)
 {
+    if (strcmp(text_to_cstring(PG_GETARG_TEXT_P(2)), "BW") != 0) {
+        elog(ERROR, "To search by words the last argument must be 'BW'");
+    }
+
     FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/wf_by_words_logfile.txt", "a");
 
     if (log_file == NULL) {
@@ -91,7 +95,6 @@ Datum wf_by_words(PG_FUNCTION_ARGS)
 
     text* text_a = PG_GETARG_TEXT_P(0);
     text* text_b = PG_GETARG_TEXT_P(1);
-    int percent = PG_GETARG_INT32(2);
 
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
