@@ -75,7 +75,7 @@ Datum wf(PG_FUNCTION_ARGS)
     fprintf(log_file, "%lf\n", elapsed_time);
     fclose(log_file);
 
-    elog(INFO, "Wagner-Fisher distance between %s and %s is equals to %d", str1, str2, distance);
+    //elog(INFO, "Wagner-Fisher distance between %s and %s is equals to %d", str1, str2, distance);
 
     PG_RETURN_INT32(distance);
 }
@@ -113,7 +113,7 @@ Datum wf_by_words(PG_FUNCTION_ARGS)
             max_dist = distance;
         }
 
-        elog(INFO, "Wagner-Fisher distance between %s and %s is equals to %d", sstr1.words[i], str2, distance);
+        //elog(INFO, "Wagner-Fisher distance between %s and %s is equals to %d", sstr1.words[i], str2, distance);
     }
 
     clock_t end_time = clock();

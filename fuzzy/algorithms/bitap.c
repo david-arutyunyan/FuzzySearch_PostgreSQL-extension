@@ -110,39 +110,35 @@ Datum bitap(PG_FUNCTION_ARGS)
     char* str2 = text_to_cstring(text_b);
     int errors = PG_GETARG_INT32(2);
 
-    char* haystack = malloc((strlen(str1) + 2) * sizeof(char));
-    char* needle = str2;
-    strcpy(haystack, str1);
-    haystack[strlen(str1)] = '&';
-    haystack[strlen(str1) + 1] = '\0';
-
-    to_upper_case(haystack);
-    to_upper_case(str2);
-
-    elog(INFO, "BITAP: %s, %s, %d", haystack, needle, errors);
-
-    SplitStr new_haystak = tokenize(haystack);
-
     bool res = false;
 
     clock_t start_time = clock();
 
     if (errors == 0) {
-        elog(INFO, "A");
-        char* needle2 = malloc((strlen(str2) + 2) * sizeof(char));
-        strcpy(needle2, str2);
-        needle2[strlen(str2)] = '&';
-        needle2[strlen(str2) + 1] = '\0';
+        SplitStr new_haystak = tokenize(str1);
+
+        start_time = clock();
 
         for (int i = 0; i < new_haystak.size; ++i) {
-            if (strcmp(new_haystak.words[i], needle2) == 0) {
+            if (strcmp(new_haystak.words[i], str2) == 0) {
                 PG_RETURN_BOOL(true);
             }
         }
-        PG_RETURN_BOOL(false);
     } else {
-        elog(INFO, "B");
-        res = bitap_algo(haystack, needle, errors-1, alphabet);
+        char* haystack = malloc((strlen(str1) + 2) * sizeof(char));
+        char* needle = str2;
+        strcpy(haystack, str1);
+        haystack[strlen(str1)] = '&';
+        haystack[strlen(str1) + 1] = '\0';
+
+        to_upper_case(haystack);
+        to_upper_case(needle);
+
+        //elog(INFO, "BITAP: %s, %s, %d", haystack, needle, errors);
+
+        start_time = clock();
+
+        res = bitap_algo(haystack, needle, errors, alphabet);
     }
 
     clock_t end_time = clock();

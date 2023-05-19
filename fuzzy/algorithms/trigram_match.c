@@ -106,7 +106,7 @@ Datum trigram_match(PG_FUNCTION_ARGS)
     fprintf(log_file, "%lf\n", elapsed_time);
     fclose(log_file);
 
-    elog(INFO, "Trigram distance between %s and %s is equals to %f", str1, str2, distance);
+    //elog(INFO, "Trigram distance between %s and %s is equals to %f", str1, str2, distance);
 
     PG_RETURN_FLOAT8(distance);
 }
@@ -144,7 +144,7 @@ Datum trigram_match_by_words(PG_FUNCTION_ARGS)
             max_dist = distance;
         }
 
-        elog(INFO, "Trigram distance between %s and %s is equals to %f", sstr1.words[i], str2, distance);
+        //elog(INFO, "Trigram distance between %s and %s is equals to %f", sstr1.words[i], str2, distance);
     }
 
     clock_t end_time = clock();
