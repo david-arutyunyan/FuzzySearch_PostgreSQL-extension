@@ -53,15 +53,24 @@ uint64_t* generateBitArray(int lev) {
 }
 
 bool bitap_algo(const char* haystack, const char* needle, int errors, const char* alphabet) {
-    uint64_t * alphabetMasks = generateAlphabetMasks(alphabet, needle);
+    uint64_t* alphabetMasks = generateAlphabetMasks(alphabet, needle);
     size_t haystackLen = strlen(haystack);
 
     uint64_t* bitArray = generateBitArray(errors);
+//
+//    for (int i = 0; i <= errors; ++i) {
+//        elog(INFO, "bitArray[%d] = %d", i, bitArray[i]);
+//    }
+//
+//    for (int i = 0; i < 300; ++i) {
+//        elog(INFO, "bitArray[%d] = %d", i, alphabetMasks[i]);
+//    }
+
     if (bitArray == NULL) {
         return false;
     }
 
-    for (int i = haystackLen; i >= 0; i--) {
+    for (int i = haystackLen - 1; i >= 0; --i) {
         uint64_t* old = malloc((errors + 1) * sizeof(uint64_t));
         if (old == NULL) {
             fprintf(stderr, "Memory allocation failed.\n");

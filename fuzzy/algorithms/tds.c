@@ -259,7 +259,6 @@ StringPairRows do_calc_pairs(Oid t1oid, const char* t1col, Oid t2oid, const char
     if (SPI_execute(query, true, 0) < 0 || SPI_tuptable == NULL) {
         elog(ERROR, "Could not SELECT rows from table '%s' (OID %d).", t1, t1oid);
     }
-    elog(INFO, "Processing %d rows in first source...", SPI_processed);
     rows[0] = palloc(sizeof(*rows[0]) * SPI_processed);
     for (uint32 i = 0; i < SPI_processed; i++) {
         char* row = SPI_getvalue((*SPI_tuptable).vals[i], (*SPI_tuptable).tupdesc, 1);
@@ -274,7 +273,6 @@ StringPairRows do_calc_pairs(Oid t1oid, const char* t1col, Oid t2oid, const char
     if (SPI_execute(query, true, 0) < 0 || SPI_tuptable == NULL) {
         elog(ERROR, "Could not SELECT rows from table '%s' (OID %d).", t2, t2oid);
     }
-    elog(INFO, "Processing %d rows in second source...", SPI_processed);
     rows[1] = palloc(sizeof(*rows[1]) * SPI_processed);
     for (uint32 i = 0; i < SPI_processed; i++) {
         char* row = SPI_getvalue((*SPI_tuptable).vals[i], (*SPI_tuptable).tupdesc, 1);
@@ -289,7 +287,6 @@ StringPairRows do_calc_pairs(Oid t1oid, const char* t1col, Oid t2oid, const char
     if (SPI_execute(query, true, 0) < 0 || SPI_tuptable == NULL) {
         elog(ERROR, "Could not SELECT rows from table '%s' (OID %d).", tR, tRoid);
     }
-    elog(INFO, "%d rules found, processing...", SPI_processed);
     rules.rs = palloc(sizeof(*rules.rs) * SPI_processed);
     for (uint32 i = 0; i < SPI_processed; i++) {
         char* temp[2];
@@ -309,7 +306,6 @@ StringPairRows do_calc_pairs(Oid t1oid, const char* t1col, Oid t2oid, const char
     }
     SPI_freetuptable(SPI_tuptable);
 
-    elog(INFO, "Calculating prefix signatures...");
     for (unsigned char j = 0; j < 2; j++) {
         rows_signatures[j] = palloc(sizeof(*rows_signatures[j]) * rows_used[j]);
         for (int i = 0; i < rows_used[j]; i++) {
@@ -317,7 +313,6 @@ StringPairRows do_calc_pairs(Oid t1oid, const char* t1col, Oid t2oid, const char
         }
     }
 
-    elog(INFO, "Calculating joins...");
     joins = palloc(sizeof(*joins) * rows_used[0] * rows_used[1] * 2);
     for (int i = 0; i < rows_used[0] * rows_used[1] * 2; i++) {
         joins[i] = palloc(sizeof(*joins[i]) * 2);
@@ -349,7 +344,6 @@ StringPairRows do_calc_pairs(Oid t1oid, const char* t1col, Oid t2oid, const char
         }
     }
 
-    elog(INFO, "Removing duplicates...");
     joins_used = remove_duplicate_joins(&joins, joins_used);
 
     oldcontext = MemoryContextSwitchTo(rescontext);
@@ -403,7 +397,6 @@ StringPairRows do_calc_dict(const Oid fullOid, const char* fullCol, const Oid ab
     if (SPI_execute(query, true, 0) < 0 || SPI_tuptable == NULL) {
         elog(ERROR, "Could not SELECT from abbreviations table '%s' (OID %d).", fullTable, fullOid);
     }
-    elog(INFO, "Processing %d rows of abbreviations...", SPI_processed);
 
     abbrs = palloc(sizeof(*abbrs) * SPI_processed);
     for (int i = 0; i < SPI_processed; i++) {
@@ -425,7 +418,6 @@ StringPairRows do_calc_dict(const Oid fullOid, const char* fullCol, const Oid ab
     if (SPI_execute(query, true, 0) < 0 || SPI_tuptable == NULL) {
         elog(ERROR, "Could not SELECT from full forms table '%s' (OID %d).", abbrTable, abbrOid);
     }
-    elog(INFO, "Processing %d rows of full forms...", SPI_processed);
 
     for (int i = 0; i < SPI_processed; i++) {
         char* row = SPI_getvalue((*SPI_tuptable).vals[i], (*SPI_tuptable).tupdesc, 1);
@@ -462,7 +454,6 @@ StringPairRows do_calc_dict(const Oid fullOid, const char* fullCol, const Oid ab
     SPI_freetuptable(SPI_tuptable);
 
     if (pairs_used == 0) {
-        elog(INFO, "No abbreviation rules found");
         return result;
     }
 
