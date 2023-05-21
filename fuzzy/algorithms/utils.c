@@ -80,7 +80,7 @@ void trie_insert(Trie* trie, char* key, void* data)
     int depth = bin_search(trie, &prev_trie, &parent, key);
     while (key[depth] != '\0') {
         Trie* sub_trie = trie_create(1);
-        Trie* added = add(prev_trie, key[depth], sub_trie);
+        Trie* added = add(prev_trie, sub_trie, key[depth]);
 
         if (parent != NULL) {
             (*parent).trie = added;
@@ -201,7 +201,6 @@ int cmp_ss(void* a, void* b)
 {
     return cmp(*(char**)a, *(char**)b);
 }
-
 
 void to_upper_case(char* str)
 {

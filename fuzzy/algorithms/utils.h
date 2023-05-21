@@ -19,11 +19,12 @@
 #include "funcapi.h"
 #include "ctype.h"
 #include <unistd.h>
+#include <stddef.h>
 
 typedef struct {
     int size;
-    int read;
     char*** pairs;
+    int read;
 } StringPairRows;
 
 typedef struct {
@@ -32,13 +33,13 @@ typedef struct {
 } SplitStr;
 
 typedef struct {
-    int c;
     struct Trie* trie;
+    int c;
 } TriePtr;
 
 typedef struct {
-    int size, capacity;
     void* data;
+    int size, capacity;
     TriePtr children[];
 } Trie;
 
@@ -50,7 +51,8 @@ Trie* trie_create(int size);
 
 void trie_insert(Trie* trie, char* key, void* data);
 
-int trie_search(Trie* trie, char* key, int s, char*** container);
+//int trie_search(Trie* trie, char* key, int s, char*** container);
+int trie_search_subsequences(Trie* trie, char* key, int key_start_pos, char*** container);
 
 SplitStr tokenize(char* string);
 

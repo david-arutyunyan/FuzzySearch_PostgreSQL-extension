@@ -3,7 +3,6 @@
 
 #include "utils.h"
 
-
 Datum jw_dist(PG_FUNCTION_ARGS);
 Datum jw_dist_by_words(PG_FUNCTION_ARGS);
 Datum get_sfactor(PG_FUNCTION_ARGS);

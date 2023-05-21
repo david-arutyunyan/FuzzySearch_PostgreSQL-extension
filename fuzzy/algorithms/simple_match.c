@@ -104,5 +104,10 @@ Datum simple_match_by_words(PG_FUNCTION_ARGS)
     fprintf(log_file, "%lf\n", elapsed_time);
     fclose(log_file);
 
+    FILE *log = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "a");
+
+    fprintf(log, "%lf, ", elapsed_time);
+    fclose(log);
+
     PG_RETURN_INT32(max_dist);
 }
