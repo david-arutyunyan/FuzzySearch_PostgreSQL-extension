@@ -386,7 +386,7 @@ StringPairRows do_calc_pairs(Oid t1oid, const char* t1col, Oid t2oid, const char
 }
 
 
-Datum calc_pairs(PG_FUNCTION_ARGS)
+Datum tds(PG_FUNCTION_ARGS)
 {
     MemoryContext oldcontext;
 
@@ -595,7 +595,7 @@ void remove_duplicate_pairs(StringPairRows* dict)
     }
 }
 
-Datum calc_dict(PG_FUNCTION_ARGS)
+Datum abbr(PG_FUNCTION_ARGS)
 {
     MemoryContext oldcontext;
     FuncCallContext *funcctx;
