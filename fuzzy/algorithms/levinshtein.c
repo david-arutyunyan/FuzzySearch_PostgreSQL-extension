@@ -83,14 +83,14 @@ Datum lev_dist_by_words(PG_FUNCTION_ARGS)
 
     SplitStr sstr1 = tokenize(str1);
 
-    int max_dist = 0;
+    int min_dist = INT32_MAX;
     int distance = 0;
 
     for (int i = 0; i < sstr1.size; ++i) {
         distance = levenshtein_distance_algo(sstr1.words[i], str2);
 
-        if (distance > max_dist) {
-            max_dist = distance;
+        if (distance < min_dist) {
+            min_dist = distance;
         }
 
         fprintf(log_file, "Lev distance between %s and %s is equals to %d\n", sstr1.words[i], str2, distance);
@@ -98,5 +98,5 @@ Datum lev_dist_by_words(PG_FUNCTION_ARGS)
 
     fclose(log_file);
 
-    PG_RETURN_INT32(max_dist);
+    PG_RETURN_INT32(min_dist);
 }
