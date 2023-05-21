@@ -29,8 +29,8 @@ PG_FUNCTION_INFO_V1(trigram_match_by_words);
 PG_FUNCTION_INFO_V1(calc_dict);
 PG_FUNCTION_INFO_V1(calc_pairs);
 PG_FUNCTION_INFO_V1(pkduck);
-//PG_FUNCTION_INFO_V1(get_tds_exact);
-//PG_FUNCTION_INFO_V1(set_tds_exact);
+PG_FUNCTION_INFO_V1(get_tds_exact);
+PG_FUNCTION_INFO_V1(set_tds_exact);
 
 //// --------------------------------------------------------------------------------------------
 //#include "postgres.h"

@@ -1,5 +1,17 @@
 #include "tds.h"
 
+int exact = 2;
+
+void set_exactness(float value)
+{
+    exact = value;
+}
+
+float get_exactness(void)
+{
+    return exact;
+}
+
 typedef struct {
     int size;
     char*** rs;
@@ -810,7 +822,7 @@ float do_cmp(const char *string1, const char *string2, float exactness, Oid tRoi
 
     pkduck = calc_pkduck(&s1, &s2, &rs);
 
-    elog(INFO, "PKDUCK-52 %s, %s: %lf", string1, string2, pkduck);
+    elog(INFO, "PKDUCK-57 %s, %s: %lf", string1, string2, pkduck);
 
     return pkduck;
 //    if (pkduck - exactness > 0.0f) {
@@ -833,4 +845,12 @@ Datum pkduck(PG_FUNCTION_ARGS) {
     SPI_finish();
 
     PG_RETURN_FLOAT8(result);
+}
+
+Datum get_tds_exact(PG_FUNCTION_ARGS) {
+    PG_RETURN_FLOAT8(get_exactness());
+}
+
+Datum set_tds_exact(PG_FUNCTION_ARGS) {
+    set_exactness(PG_GETARG_FLOAT8(0));
 }
