@@ -1,6 +1,6 @@
 #include "tds.h"
 
-int exact = 2;
+float exact = 0.7;
 
 void set_exactness(float value)
 {
@@ -827,7 +827,7 @@ Datum pkduck(PG_FUNCTION_ARGS) {
 }
 
 Datum get_tds_exact(PG_FUNCTION_ARGS) {
-    PG_RETURN_FLOAT8(get_exactness());
+    PG_RETURN_FLOAT8(floor( get_exactness()*100 )/100);
 }
 
 Datum set_tds_exact(PG_FUNCTION_ARGS) {
