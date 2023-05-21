@@ -43,6 +43,33 @@ typedef struct {
     TriePtr children[];
 } Trie;
 
+typedef struct {
+    int size;
+    char*** rs;
+} RuleSeq;
+
+typedef struct {
+    bool applies;
+    int aside;
+    int rside;
+} SubRuleApplication;
+
+typedef struct {
+    SubRuleApplication a_f;
+    SubRuleApplication f_a;
+    const char** rule;
+} RuleApplication;
+
+typedef struct {
+    SplitStr a;
+    SplitStr r;
+} Rule;
+
+typedef struct {
+    int size;
+    Rule *rules;
+} RuleSequence;
+
 Trie* grow(Trie* trie);
 
 int ptr_cmp(void* a, void* b);

@@ -12,23 +12,6 @@ float get_exactness(void)
     return exact;
 }
 
-typedef struct {
-    int size;
-    char*** rs;
-} RuleSeq;
-
-typedef struct {
-    bool applies;
-    int aside;
-    int rside;
-} SubRuleApplication;
-
-typedef struct {
-    SubRuleApplication a_f;
-    SubRuleApplication f_a;
-    const char** rule;
-} RuleApplication;
-
 int prefix_sig_length(int tokens_total, float exactness)
 {
     return (int)(floor((1.0f - exactness) * tokens_total)) + 1;
@@ -385,67 +368,6 @@ StringPairRows do_calc_pairs(Oid t1oid, const char* t1col, Oid t2oid, const char
     return results;
 }
 
-
-Datum tds(PG_FUNCTION_ARGS)
-{
-    MemoryContext oldcontext;
-
-    FuncCallContext *funcctx;
-    TupleDesc tupdesc;
-    Datum result;
-    StringPairRows* pairs;
-
-    if (SRF_IS_FIRSTCALL())
-    {
-        Oid t1oid;
-        Oid t2oid;
-        Oid tRoid;
-        char* t1col;
-        char* t2col;
-        char* tRcol_full;
-        char* tRcol_abbr;
-        float exactness;
-
-        StringPairRows calculated;
-
-        funcctx = SRF_FIRSTCALL_INIT();
-        oldcontext = MemoryContextSwitchTo((*funcctx).multi_call_memory_ctx);
-        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE) {
-            ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED), errmsg("Function returning record called in context that cannot accept type record")));
-        }
-        (*funcctx).attinmeta = TupleDescGetAttInMetadata(tupdesc);
-        (*funcctx).user_fctx = palloc(sizeof(StringPairRows));
-
-        t1oid = PG_GETARG_OID(0);
-        t1col = text_to_cstring(PG_GETARG_TEXT_P(1));
-        t2oid = PG_GETARG_OID(2);
-        t2col = text_to_cstring(PG_GETARG_TEXT_P(3));
-        tRoid = PG_GETARG_OID(4);
-        tRcol_full = text_to_cstring(PG_GETARG_TEXT_P(5));
-        tRcol_abbr = text_to_cstring(PG_GETARG_TEXT_P(6));
-        exactness = PG_GETARG_FLOAT8(7);
-
-        SPI_connect();
-        calculated = do_calc_pairs(t1oid, t1col, t2oid, t2col, tRoid, tRcol_abbr, tRcol_full, exactness, (*funcctx).multi_call_memory_ctx);
-        SPI_finish();
-        *(StringPairRows*)(*funcctx).user_fctx = calculated;
-
-        MemoryContextSwitchTo(oldcontext);
-    }
-
-    funcctx = SRF_PERCALL_SETUP();
-
-    pairs = (StringPairRows*)(*funcctx).user_fctx;
-
-    if ((*pairs).read >= (*pairs).size) {
-        SRF_RETURN_DONE(funcctx);
-    }
-
-    result = HeapTupleGetDatum(BuildTupleFromCStrings((*funcctx).attinmeta, (*pairs).pairs[(*pairs).read++]));
-
-    SRF_RETURN_NEXT(funcctx, result);
-}
-
 int compare_pair(const void* l, const void* r)
 {
     const char** pair_l = *(const char***)l;
@@ -595,82 +517,6 @@ void remove_duplicate_pairs(StringPairRows* dict)
     }
 }
 
-Datum abbr(PG_FUNCTION_ARGS)
-{
-    MemoryContext oldcontext;
-    FuncCallContext *funcctx;
-    TupleDesc tupdesc;
-    Datum result;
-    StringPairRows* dict;
-
-    if (SRF_IS_FIRSTCALL())
-    {
-        Oid fullOid;
-        Oid abbrOid;
-        char* fullCol;
-        char* abbrCol;
-
-        StringPairRows calculated;
-
-        funcctx = SRF_FIRSTCALL_INIT();
-        oldcontext = MemoryContextSwitchTo((*funcctx).multi_call_memory_ctx);
-        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE) {
-            ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED), errmsg("Function returning record called in context that cannot accept type record")));
-        }
-        (*funcctx).attinmeta = TupleDescGetAttInMetadata(tupdesc);
-        (*funcctx).user_fctx = palloc(sizeof(StringPairRows));
-
-        fullOid = PG_GETARG_OID(0);
-        abbrOid = PG_GETARG_OID(2);
-        fullCol = text_to_cstring(PG_GETARG_TEXT_P(1));
-        abbrCol = text_to_cstring(PG_GETARG_TEXT_P(3));
-
-        SPI_connect();
-        calculated = do_calc_dict(fullOid, fullCol, abbrOid, abbrCol);
-        SPI_finish();
-        Assert(calculated.pairs != NULL);
-        remove_duplicate_pairs(&calculated);
-
-        dict = (*funcctx).user_fctx;
-        (*dict).size = calculated.size;
-        (*dict).read = 0;
-        (*dict).pairs = palloc(sizeof(*(*dict).pairs) * calculated.size);
-        for (int i = 0; i < calculated.size; i++) {
-            (*dict).pairs[i] = palloc(sizeof(*(*dict).pairs[i]) * 2);
-            for (int j = 0; j < 2; j++) {
-                (*dict).pairs[i][j] = palloc(strlen(calculated.pairs[i][j]) + 1);
-                strcpy((*dict).pairs[i][j], calculated.pairs[i][j]);
-            }
-        }
-
-        MemoryContextSwitchTo(oldcontext);
-    }
-
-    funcctx = SRF_PERCALL_SETUP();
-
-    dict = (*funcctx).user_fctx;
-
-    if ((*dict).read >= (*dict).size) {
-        SRF_RETURN_DONE(funcctx);
-    }
-
-    result = HeapTupleGetDatum(BuildTupleFromCStrings((*funcctx).attinmeta, (*dict).pairs[(*dict).read]));
-    (*dict).read += 1;
-
-    SRF_RETURN_NEXT(funcctx, result);
-}
-
-
-typedef struct {
-    SplitStr a;
-    SplitStr r;
-} Rule;
-
-typedef struct {
-    int size;
-    Rule *rules;
-} RuleSequence;
-
 float apply_rule(SplitStr *s1, SplitStr *s2, Rule rule, bool modify_sequences, int *tokens_shared, int *tokens_thrown) {
     float usefullness;
 
@@ -764,8 +610,8 @@ float calc_pkduck(SplitStr *s1, SplitStr *s2, const RuleSequence *rules_ptr) {
     return jaccard_common / jaccard_total;
 }
 
-float do_cmp(const char *string1, const char *string2, float exactness, Oid tRoid, const char *tRcol_abbr,
-             const char *tRcol_full) {
+bool do_cmp(const char *string1, const char *string2, float exactness, Oid tRoid, const char *tRcol_abbr,
+             const char *tRcol_full, FILE* log_file) {
     char *tR;
 
     char query[4096];
@@ -822,17 +668,148 @@ float do_cmp(const char *string1, const char *string2, float exactness, Oid tRoi
 
     pkduck = calc_pkduck(&s1, &s2, &rs);
 
-    elog(INFO, "PKDUCK-57 %s, %s: %lf", string1, string2, pkduck);
+    fprintf(log_file, "PKDUCK measure between %s and %s is equals to %lf\n", string1, string2, pkduck);
 
-    return pkduck;
-//    if (pkduck - exactness > 0.0f) {
-//        return true;
-//    }
-//    return false;
+    if (pkduck - exactness > 0.0f) {
+        return true;
+    }
+    return false;
 }
 
 
+Datum abbr(PG_FUNCTION_ARGS)
+{
+    MemoryContext oldcontext;
+    FuncCallContext *funcctx;
+    TupleDesc tupdesc;
+    Datum result;
+    StringPairRows* dict;
+
+    if (SRF_IS_FIRSTCALL())
+    {
+        Oid fullOid;
+        Oid abbrOid;
+        char* fullCol;
+        char* abbrCol;
+
+        StringPairRows calculated;
+
+        funcctx = SRF_FIRSTCALL_INIT();
+        oldcontext = MemoryContextSwitchTo((*funcctx).multi_call_memory_ctx);
+        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE) {
+            ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED), errmsg("Function returning record called in context that cannot accept type record")));
+        }
+        (*funcctx).attinmeta = TupleDescGetAttInMetadata(tupdesc);
+        (*funcctx).user_fctx = palloc(sizeof(StringPairRows));
+
+        fullOid = PG_GETARG_OID(0);
+        abbrOid = PG_GETARG_OID(2);
+        fullCol = text_to_cstring(PG_GETARG_TEXT_P(1));
+        abbrCol = text_to_cstring(PG_GETARG_TEXT_P(3));
+
+        SPI_connect();
+        calculated = do_calc_dict(fullOid, fullCol, abbrOid, abbrCol);
+        SPI_finish();
+        Assert(calculated.pairs != NULL);
+        remove_duplicate_pairs(&calculated);
+
+        dict = (*funcctx).user_fctx;
+        (*dict).size = calculated.size;
+        (*dict).read = 0;
+        (*dict).pairs = palloc(sizeof(*(*dict).pairs) * calculated.size);
+        for (int i = 0; i < calculated.size; i++) {
+            (*dict).pairs[i] = palloc(sizeof(*(*dict).pairs[i]) * 2);
+            for (int j = 0; j < 2; j++) {
+                (*dict).pairs[i][j] = palloc(strlen(calculated.pairs[i][j]) + 1);
+                strcpy((*dict).pairs[i][j], calculated.pairs[i][j]);
+            }
+        }
+
+        MemoryContextSwitchTo(oldcontext);
+    }
+
+    funcctx = SRF_PERCALL_SETUP();
+
+    dict = (*funcctx).user_fctx;
+
+    if ((*dict).read >= (*dict).size) {
+        SRF_RETURN_DONE(funcctx);
+    }
+
+    result = HeapTupleGetDatum(BuildTupleFromCStrings((*funcctx).attinmeta, (*dict).pairs[(*dict).read]));
+    (*dict).read += 1;
+
+    SRF_RETURN_NEXT(funcctx, result);
+}
+
+Datum tds(PG_FUNCTION_ARGS)
+{
+    MemoryContext oldcontext;
+
+    FuncCallContext *funcctx;
+    TupleDesc tupdesc;
+    Datum result;
+    StringPairRows* pairs;
+
+    if (SRF_IS_FIRSTCALL())
+    {
+        Oid t1oid;
+        Oid t2oid;
+        Oid tRoid;
+        char* t1col;
+        char* t2col;
+        char* tRcol_full;
+        char* tRcol_abbr;
+        float exactness;
+
+        StringPairRows calculated;
+
+        funcctx = SRF_FIRSTCALL_INIT();
+        oldcontext = MemoryContextSwitchTo((*funcctx).multi_call_memory_ctx);
+        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE) {
+            ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED), errmsg("Function returning record called in context that cannot accept type record")));
+        }
+        (*funcctx).attinmeta = TupleDescGetAttInMetadata(tupdesc);
+        (*funcctx).user_fctx = palloc(sizeof(StringPairRows));
+
+        t1oid = PG_GETARG_OID(0);
+        t1col = text_to_cstring(PG_GETARG_TEXT_P(1));
+        t2oid = PG_GETARG_OID(2);
+        t2col = text_to_cstring(PG_GETARG_TEXT_P(3));
+        tRoid = PG_GETARG_OID(4);
+        tRcol_full = text_to_cstring(PG_GETARG_TEXT_P(5));
+        tRcol_abbr = text_to_cstring(PG_GETARG_TEXT_P(6));
+        exactness = PG_GETARG_FLOAT8(7);
+
+        SPI_connect();
+        calculated = do_calc_pairs(t1oid, t1col, t2oid, t2col, tRoid, tRcol_abbr, tRcol_full, exactness, (*funcctx).multi_call_memory_ctx);
+        SPI_finish();
+        *(StringPairRows*)(*funcctx).user_fctx = calculated;
+
+        MemoryContextSwitchTo(oldcontext);
+    }
+
+    funcctx = SRF_PERCALL_SETUP();
+
+    pairs = (StringPairRows*)(*funcctx).user_fctx;
+
+    if ((*pairs).read >= (*pairs).size) {
+        SRF_RETURN_DONE(funcctx);
+    }
+
+    result = HeapTupleGetDatum(BuildTupleFromCStrings((*funcctx).attinmeta, (*pairs).pairs[(*pairs).read++]));
+
+    SRF_RETURN_NEXT(funcctx, result);
+}
+
 Datum pkduck(PG_FUNCTION_ARGS) {
+    FILE *log_file = fopen("pkduck_logfile.txt", "a");
+
+    if (log_file == NULL) {
+        elog(ERROR, "Failed to open log file.");
+        PG_RETURN_NULL();
+    }
+
     char *string1 = text_to_cstring(PG_GETARG_TEXT_P(0));
     char *string2 = text_to_cstring(PG_GETARG_TEXT_P(1));
     Oid tRoid = PG_GETARG_OID(2);
@@ -841,10 +818,12 @@ Datum pkduck(PG_FUNCTION_ARGS) {
     float exactness = PG_GETARG_FLOAT4(5);
 
     SPI_connect();
-    float result = do_cmp(string1, string2, exactness, tRoid, tRcol_abbr, tRcol_full);
+    bool result = do_cmp(string1, string2, exactness, tRoid, tRcol_abbr, tRcol_full, log_file);
     SPI_finish();
 
-    PG_RETURN_FLOAT8(result);
+    fclose(log_file);
+
+    PG_RETURN_BOOL(result);
 }
 
 Datum get_tds_exact(PG_FUNCTION_ARGS) {
