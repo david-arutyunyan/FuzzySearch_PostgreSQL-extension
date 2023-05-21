@@ -117,7 +117,7 @@ float jaro_winkler_distance_algo(const char *s1, const char *s2, float prefix_sc
 
 Datum jw_dist(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/jw_dist_logfile.txt", "a");
+    FILE *log_file = fopen("jw_dist_logfile.txt", "a");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -133,21 +133,11 @@ Datum jw_dist(PG_FUNCTION_ARGS)
     to_upper_case(str1);
     to_upper_case(str2);
 
-//    float scale_factor = get_scale_factor(); //PG_GETARG_FLOAT8(2);
-//    float max_distance = get_max_dist(); //PG_GETARG_FLOAT8(3);
-
-    clock_t start_time = clock();
 
     float distance = jaro_winkler_distance_algo(str1, str2, get_scale_factor(), get_dist());
 
-    clock_t end_time = clock();
-
-    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
-
-    fprintf(log_file, "%lf\n", elapsed_time);
+    fprintf(log_file, "Jaro-Winkler distance between %s and %s is equals to %f\n", str1, str2, distance);
     fclose(log_file);
-
-    //elog(INFO, "Jaro-Winkler distance between %s and %s is equals to %f", str1, str2, distance);
 
     PG_RETURN_FLOAT8(distance);
 }
@@ -158,7 +148,7 @@ Datum jw_dist_by_words(PG_FUNCTION_ARGS)
         elog(ERROR, "To search by words the last argument must be 'BW'");
     }
 
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/jw_dist_by_words_logfile.txt", "a");
+    FILE *log_file = fopen("jw_dist_by_words_logfile.txt", "a");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -167,8 +157,6 @@ Datum jw_dist_by_words(PG_FUNCTION_ARGS)
 
     text* text_a = PG_GETARG_TEXT_P(0);
     text* text_b = PG_GETARG_TEXT_P(1);
-//    float scale_factor = get_scale_factor(); //PG_GETARG_FLOAT8(2);
-//    float max_distance = get_max_dist(); //PG_GETARG_FLOAT8(3);
 
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
@@ -190,20 +178,10 @@ Datum jw_dist_by_words(PG_FUNCTION_ARGS)
             max_dist = distance;
         }
 
-        //elog(INFO, "Jaro-Winkler distance between %s and %s is equals to %f", sstr1.words[i], str2, distance);
+        fprintf(log_file, "Jaro-Winkler distance between %s and %s is equals to %f\n", sstr1.words[i], str2, distance);
     }
 
-    clock_t end_time = clock();
-
-    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
-
-    fprintf(log_file, "%lf\n", elapsed_time);
     fclose(log_file);
-
-    FILE *log = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "a");
-
-    fprintf(log, "%lf, ", elapsed_time);
-    fclose(log);
 
     PG_RETURN_FLOAT8(max_dist);
 }

@@ -48,7 +48,7 @@ int wagner_fischer_algo(char* s1, char* s2) {
 
 Datum wf(PG_FUNCTION_ARGS)
 {
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/wf_logfile.txt", "a");
+    FILE *log_file = fopen("wf_logfile.txt", "a");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -64,18 +64,10 @@ Datum wf(PG_FUNCTION_ARGS)
     to_upper_case(str1);
     to_upper_case(str2);
 
-    clock_t start_time = clock();
-
     int distance = wagner_fischer_algo(str1, str2);
 
-    clock_t end_time = clock();
-
-    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
-
-    fprintf(log_file, "%lf\n", elapsed_time);
+    fprintf(log_file, "Wagner-Fisher distance between %s and %s is equals to %d\n", str1, str2, distance);
     fclose(log_file);
-
-    //elog(INFO, "Wagner-Fisher distance between %s and %s is equals to %d", str1, str2, distance);
 
     PG_RETURN_INT32(distance);
 }
@@ -86,7 +78,7 @@ Datum wf_by_words(PG_FUNCTION_ARGS)
         elog(ERROR, "To search by words the last argument must be 'BW'");
     }
 
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/wf_by_words_logfile.txt", "a");
+    FILE *log_file = fopen("wf_by_words_logfile.txt", "a");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -107,8 +99,6 @@ Datum wf_by_words(PG_FUNCTION_ARGS)
     int max_dist = 0;
     int distance = 0;
 
-    clock_t start_time = clock();
-
     for (int i = 0; i < sstr1.size; ++i) {
         distance = wagner_fischer_algo(sstr1.words[i], str2);
 
@@ -116,20 +106,10 @@ Datum wf_by_words(PG_FUNCTION_ARGS)
             max_dist = distance;
         }
 
-        //elog(INFO, "Wagner-Fisher distance between %s and %s is equals to %d", sstr1.words[i], str2, distance);
+        fprintf(log_file, "Wagner-Fisher distance between %s and %s is equals to %d\n", sstr1.words[i], str2, distance);
     }
 
-    clock_t end_time = clock();
-
-    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
-
-    fprintf(log_file, "%lf\n", elapsed_time);
     fclose(log_file);
-
-    FILE *log = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "a");
-
-    fprintf(log, "%lf\n", elapsed_time);
-    fclose(log);
 
     PG_RETURN_INT32(max_dist);
 }

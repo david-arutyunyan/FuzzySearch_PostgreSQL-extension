@@ -99,7 +99,7 @@ bool bitap_algo(const char* haystack, const char* needle, int errors, const char
 Datum bitap(PG_FUNCTION_ARGS)
 {
     char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ1234567890.,!? &";
-    FILE *log_file = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/bitap_logfile.txt", "a");
+    FILE *log_file = fopen("bitap_logfile.txt", "a");
 
     if (log_file == NULL) {
         elog(ERROR, "Failed to open log file.");
@@ -111,16 +111,12 @@ Datum bitap(PG_FUNCTION_ARGS)
 
     char* str1 = text_to_cstring(text_a);
     char* str2 = text_to_cstring(text_b);
-    int errors = get_errors(); //PG_GETARG_INT32(2);
+    int errors = get_errors();
 
     bool res = false;
 
-    clock_t start_time = clock();
-
     if (errors == 0) {
         SplitStr new_haystak = tokenize(str1);
-
-        start_time = clock();
 
         for (int i = 0; i < new_haystak.size; ++i) {
             if (strcmp(new_haystak.words[i], str2) == 0) {
@@ -137,24 +133,12 @@ Datum bitap(PG_FUNCTION_ARGS)
         to_upper_case(haystack);
         to_upper_case(needle);
 
-        //elog(INFO, "BITAP: %s, %s, %d", haystack, needle, errors);
-
-        start_time = clock();
-
         res = bitap_algo(haystack, needle, errors, alphabet);
+
+        fprintf(log_file, "Bitap: haystack = %s; needle = %s; errors = %d. Match: %d\n", haystack, needle, errors, res);
     }
 
-    clock_t end_time = clock();
-
-    float elapsed_time = (float)(end_time - start_time) / CLOCKS_PER_SEC;
-
-    fprintf(log_file, "%lf\n", elapsed_time);
     fclose(log_file);
-
-    FILE *log = fopen("/home/daarutyunyan/hse/diploma/PostgresFuzzySearchExtension/fuzzy/logfile.txt", "a");
-
-    fprintf(log, "%lf, ", elapsed_time);
-    fclose(log);
 
     PG_RETURN_BOOL(res);
 }
