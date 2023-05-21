@@ -503,7 +503,7 @@ StringPairRows do_calc_dict(const Oid fullOid, const char* fullCol, const Oid ab
             continue;
         }
 
-        subsequences_found = trie_search_subsequences(trie, row, 0,&subsequences);
+        subsequences_found = trie_search(trie, row, 0,&subsequences);
         if (subsequences_found != 0) {
             pairs = pairs == NULL ?
                     palloc(subsequences_found * sizeof(*pairs)) :

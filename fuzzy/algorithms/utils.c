@@ -2,8 +2,6 @@
 
 Trie* add(Trie* trie, Trie* child, int c)
 {
-    //elog(INFO, "add()");
-    //elog(INFO, "=== %d <-> %d = %d", (*self).size, (*self).nchildren, c);
     if ((*trie).capacity == (*trie).size) {
         trie = grow(trie);
     }
@@ -17,7 +15,6 @@ Trie* add(Trie* trie, Trie* child, int c)
 
 int bin_search(Trie* trie, Trie** child, TriePtr** ptr, char* key)
 {
-    //elog(INFO, "bin_search()");
     int i = 0;
     bool flag = true;
     *ptr = NULL;
@@ -48,7 +45,6 @@ int bin_search(Trie* trie, Trie** child, TriePtr** ptr, char* key)
 
 Trie* grow(Trie* trie)
 {
-    //elog(INFO, "grow()");
     int new_size = (*trie).capacity * 2;
     Trie* resized = repalloc(trie, sizeof(*trie) + sizeof(TriePtr) * new_size);
     (*resized).capacity = new_size;
@@ -58,7 +54,6 @@ Trie* grow(Trie* trie)
 
 int ptr_cmp(void* a, void* b)
 {
-    //elog(INFO, "ptr_cmp()");
     return (*((TriePtr*)a)).c - (*((TriePtr*)b)).c;
 }
 
@@ -74,7 +69,6 @@ Trie* trie_create(int size)
 
 void trie_insert(Trie* trie, char* key, void* data)
 {
-    //elog(INFO, "trie_insert()");
     Trie* prev_trie;
     TriePtr* parent;
     int depth = bin_search(trie, &prev_trie, &parent, key);
@@ -92,8 +86,7 @@ void trie_insert(Trie* trie, char* key, void* data)
     (*prev_trie).data = data;
 }
 
-int trie_search_subsequences(Trie* trie, char* key, int s, char*** container_ptr) {
-    //elog(INFO, "trie_search_subsequences()");
+int trie_search(Trie* trie, char* key, int s, char*** container_ptr) {
     int container_length = 0;
 
     if ((*trie).size == 0) {
@@ -113,7 +106,7 @@ int trie_search_subsequences(Trie* trie, char* key, int s, char*** container_ptr
 
             if ((*p).c == key[i]) {
                 char** temp = NULL;
-                int temp_length = trie_search_subsequences((*p).trie, key, i + 1, &temp);
+                int temp_length = trie_search((*p).trie, key, i + 1, &temp);
                 if (temp_length != 0) {
                     *container_ptr = *container_ptr == NULL ?
                                      palloc(sizeof(**container_ptr) * temp_length) :

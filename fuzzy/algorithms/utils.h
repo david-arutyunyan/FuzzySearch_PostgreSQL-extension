@@ -52,7 +52,7 @@ Trie* trie_create(int size);
 void trie_insert(Trie* trie, char* key, void* data);
 
 //int trie_search(Trie* trie, char* key, int s, char*** container);
-int trie_search_subsequences(Trie* trie, char* key, int key_start_pos, char*** container);
+int trie_search(Trie* trie, char* key, int key_start_pos, char*** container);
 
 SplitStr tokenize(char* string);
 
