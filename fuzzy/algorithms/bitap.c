@@ -57,14 +57,6 @@ bool bitap_algo(const char* haystack, const char* needle, int errors, const char
     size_t haystackLen = strlen(haystack);
 
     uint64_t* bitArray = generateBitArray(errors);
-//
-//    for (int i = 0; i <= errors; ++i) {
-//        elog(INFO, "bitArray[%d] = %d", i, bitArray[i]);
-//    }
-//
-//    for (int i = 0; i < 300; ++i) {
-//        elog(INFO, "bitArray[%d] = %d", i, alphabetMasks[i]);
-//    }
 
     if (bitArray == NULL) {
         return false;
