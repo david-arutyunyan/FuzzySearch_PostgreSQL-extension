@@ -107,7 +107,7 @@ bool bitap_algo(const char* haystack, const char* needle, int errors, const char
 
 Datum bitap(PG_FUNCTION_ARGS)
 {
-    char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ1234567890.,!? &";
+    char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.,!? &";
     FILE *log_file = fopen("bitap_logfile.txt", "a");
 
     if (log_file == NULL) {
